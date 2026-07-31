@@ -1,6 +1,26 @@
 #!/usr/bin/env node
 /**
- * Regenerate per-project data and the landing aggregate.
+ * Regenerate EVERY generated artefact in the hub, in dependency order:
+ *
+ *   1. build-project-data.js       per project → projects/<slug>/data.{json,js}
+ *   2. build-project-dashboard.js  per project → projects/<slug>/index.html
+ *   3. build-hub-data.js           once        → hub.json, hub.js
+ *   4. build-landing.js            once        → index.html
+ *
+ * Previously this ran only steps 1 and 3, so `npm run build` left the HTML
+ * stale and each caller had to remember two more commands.
+ *
+ * Run this as the LAST step before committing, from a clean working tree. The
+ * generators describe whatever is on disk, so building with uncommitted renames
+ * or half-finished project moves bakes a repo state that does not exist into
+ * files everyone else pulls.
+ *
+ * Note: several outputs embed date-relative metrics ("N in the last 7 days",
+ * "7d pass rate"), so the same source data yields a different file on a
+ * different day. That is why these artefacts conflict between branches built at
+ * different times, and why they are only truly correct when built at publish
+ * time rather than committed per-branch.
+ *
  * Usage: node scripts/build-all.js
  */
 
@@ -33,7 +53,9 @@ if (projects.length === 0) {
 } else {
   for (const name of projects) {
     run('build-project-data.js', [`--project=${name}`]);
+    run('build-project-dashboard.js', [`--project=${name}`]);
   }
 }
 run('build-hub-data.js', []);
-console.log('[build-all] done.');
+run('build-landing.js', []);
+console.log(`[build-all] done — ${projects.length} project(s), hub data + landing page.`);

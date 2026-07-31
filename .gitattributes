@@ -1,0 +1,23 @@
+# Generated dashboard artefacts.
+#
+# These four are pure outputs of scripts/build-all.js. Nobody hand-edits them,
+# but every branch that publishes a test run rewrites them — so two branches
+# touching unrelated projects still collide here (run counts, pass rates, the
+# "Generated" timestamp). Refereeing that conflict by hand is meaningless.
+#
+# `merge=ours` keeps our side instead of halting the merge. That is only correct
+# because the file is regenerated immediately afterwards — see the post-merge
+# hook in .githooks/. Without the regeneration step this WOULD silently drop the
+# other side's projects from the landing page.
+#
+# Requires (once per clone, both are local config and are not carried by clone):
+#   git config merge.ours.driver true
+#   git config core.hooksPath .githooks
+# Without the driver, git ignores the attribute and you get a normal conflict —
+# harmless, just unhelpful. Run `npm run build` and take the regenerated file.
+index.html  merge=ours
+hub.json    merge=ours
+hub.js      merge=ours
+projects/*/index.html  merge=ours
+projects/*/data.json   merge=ours
+projects/*/data.js     merge=ours

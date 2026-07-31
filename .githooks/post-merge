@@ -1,0 +1,16 @@
+#!/bin/sh
+# Regenerate the dashboard artefacts after a merge.
+#
+# .gitattributes marks index.html / hub.json / hub.js and the per-project
+# equivalents as `merge=ours`, so a merge no longer stops on them. That keeps OUR
+# copy — which is stale the moment the other side added or changed a project.
+# Regenerating here is what makes `merge=ours` safe: the files end up describing
+# the merged tree rather than either side's snapshot.
+#
+# Enable with:  git config core.hooksPath .githooks
+echo "[post-merge] regenerating dashboard artefacts…"
+node scripts/build-all.js || {
+  echo "[post-merge] build failed — generated files may be stale."
+  echo "[post-merge] fix the error, then run: npm run build"
+  exit 0   # never block the merge; just warn
+}
